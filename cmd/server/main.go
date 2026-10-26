@@ -43,7 +43,11 @@ func run() error {
 	actorService := service.NewActorService(actorDAO)
 	actorController := controllers.NewActorController(actorService)
 
-	r, err := SetupRouter(actorController)
+	directorDAO := dao.NewDirectorDAO(client, dbName)
+	directorService := service.NewDirectorService(directorDAO)
+	directorController := controllers.NewDirectorController(directorService)
+
+	r, err := SetupRouter(actorController, directorController)
 	if err != nil {
 		return fmt.Errorf("initialize application dependencies: %w", err)
 	}
