@@ -1,5 +1,47 @@
 package main
 
-func main() {
+import (
+	"context"
+	"fmt"
+	"log"
+	"os"
+	"time"
 
+	"github.com/braulio-almonte-opt/task3-moviesAPI/models"
+)
+
+func main() {
+	if err := run(); err != nil {
+		log.Print(err)
+		os.Exit(1)
+	}
+}
+
+func run() error {
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		return fmt.Errorf("JWT_SECRET must be configured")
+	}
+
+	client, err := models.ConnectDatabase()
+	if err != nil {
+		return err
+	}
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := client.Disconnect(ctx); err != nil {
+			log.Printf("disconnect MongoDB: %v", err)
+		}
+	}()
+
+	r, err := SetupRouter(client, []byte(jwtSecret))
+	if err != nil {
+		return fmt.Errorf("initialize application dependencies: %w", err)
+	}
+	log.Println("Server started")
+	if err := r.Run(); err != nil {
+		return err
+	}
+	return nil
 }

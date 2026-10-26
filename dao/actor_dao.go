@@ -1,4 +1,4 @@
-package repository
+package dao
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type ActorRepository interface {
+type ActorDAO interface {
 	InsertActor(ctx context.Context, actor models.Actor) error
 	GetActorByName(ctx context.Context, actorName string) (models.Actor, error)
 	GetActorByID(ctx context.Context, actorID string) (models.Actor, error)
@@ -24,13 +24,13 @@ type MongoActorDAO struct {
 	collection *mongo.Collection
 }
 
-func NewActorUserDAO(client *mongo.Client, dbName, collectionName string) *MongoActorDAO {
+func NewActorUserDAO(client *mongo.Client, dbName string) *MongoActorDAO {
 	return &MongoActorDAO{
-		collection: client.Database(dbName).Collection(collectionName),
+		collection: client.Database(dbName).Collection("actors"),
 	}
 }
 
-var _ ActorRepository = (*MongoActorDAO)(nil)
+var _ ActorDAO = (*MongoActorDAO)(nil)
 
 func (dao *MongoActorDAO) InsertActor(ctx context.Context, actor models.Actor) error {
 	_, err := dao.collection.InsertOne(ctx, actor)
@@ -61,8 +61,18 @@ func (dao *MongoActorDAO) GetActorByName(ctx context.Context, actorName string) 
 func (dao *MongoActorDAO) FindAllActors(ctx context.Context, actorName string) ([]models.Actor, error) {
 	var actors []models.Actor
 	filter := bson.D{{Key: "name", Value: actorName}}
-	err := dao.collection.FindOne(ctx, filter).Decode(&actors)
-	return actors, err
+
+	cursor, err := dao.collection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	if err := cursor.All(ctx, &actors); err != nil {
+		return nil, err
+	}
+
+	return actors, nil
 }
 
 func (dao *MongoActorDAO) ListAll(ctx context.Context) ([]models.Actor, error) {
@@ -90,7 +100,7 @@ func (dao *MongoActorDAO) UpdateActor(ctx context.Context, actorID, actorName st
 	}
 	update := bson.M{"$set": bson.M{"name": actorName}}
 	filter := bson.M{"_id": id}
-	result, err := dao.collection.UpdateByID(ctx, filter, update)
+	result, err := dao.collection.UpdateOne(ctx, filter, update)
 	if err != nil {
 		return err
 	}
