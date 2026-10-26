@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/braulio-almonte-opt/task3-moviesAPI/models"
@@ -35,10 +34,15 @@ func NewDirectorResponse(director models.Director) DirectorResponse {
 func (ctrl *DirectorController) CreateDirector(c *gin.Context) {
 	var director models.Director
 	if err := c.ShouldBindJSON(&director); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Falied to insert director"})
-		log.Printf("Error creating director: %v", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	if err := ctrl.service.CreateDirector(c.Request.Context(), director); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert director"})
+		return
+	}
+
 	c.JSON(http.StatusCreated, NewDirectorResponse(director))
 }
 
