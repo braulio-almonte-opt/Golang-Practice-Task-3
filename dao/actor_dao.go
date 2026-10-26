@@ -24,7 +24,7 @@ type MongoActorDAO struct {
 	collection *mongo.Collection
 }
 
-func NewActorUserDAO(client *mongo.Client, dbName string) *MongoActorDAO {
+func NewActorDAO(client *mongo.Client, dbName string) *MongoActorDAO {
 	return &MongoActorDAO{
 		collection: client.Database(dbName).Collection("actors"),
 	}

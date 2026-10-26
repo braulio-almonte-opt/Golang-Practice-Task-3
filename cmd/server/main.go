@@ -35,11 +35,11 @@ func run() error {
 		}
 	}()
 
-	if err := godotenv.Load(); err != nil {
+	if err := godotenv.Load(""); err != nil {
 		log.Println("No .env file found")
 	}
 	dbName := "moviesAPI"
-	actorDAO := dao.NewActorUserDAO(client, dbName)
+	actorDAO := dao.NewActorDAO(client, dbName)
 	actorService := service.NewActorService(actorDAO)
 	actorController := controllers.NewActorController(actorService)
 
@@ -47,7 +47,11 @@ func run() error {
 	directorService := service.NewDirectorService(directorDAO)
 	directorController := controllers.NewDirectorController(directorService)
 
-	r, err := SetupRouter(actorController, directorController)
+	filmDAO := dao.NewFilmDAO(client, dbName)
+	filmService := service.NewFilmService(filmDAO, directorDAO)
+	filmController := controllers.NewFilmController(filmService)
+
+	r, err := SetupRouter(actorController, directorController, filmController)
 	if err != nil {
 		return fmt.Errorf("initialize application dependencies: %w", err)
 	}

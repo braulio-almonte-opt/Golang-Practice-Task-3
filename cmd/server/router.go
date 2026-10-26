@@ -5,7 +5,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouter(actorController *controllers.ActorController, directorController *controllers.DirectorController) (*gin.Engine, error) {
+func SetupRouter(
+	actorController *controllers.ActorController,
+	directorController *controllers.DirectorController,
+	filmController *controllers.FilmController) (*gin.Engine, error) {
 
 	r := gin.Default()
 
@@ -29,6 +32,18 @@ func SetupRouter(actorController *controllers.ActorController, directorControlle
 			directors.DELETE("/:id", directorController.DeleteDirector)
 
 		}
+
+		films := api.Group("/films")
+		{
+			films.POST("", filmController.CreateFilm)
+			films.GET("", filmController.GetAllFilms)
+			films.GET("/:id", filmController.GetFilmByID)
+			films.PUT("/:id", filmController.UpdateFilm)
+			films.DELETE("/:id", filmController.DeleteFilm)
+
+			films.GET("/director/:directorId", filmController.GetFilmsByDirector)
+		}
+
 	}
 
 	return r, nil
