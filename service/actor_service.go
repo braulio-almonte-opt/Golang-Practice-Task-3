@@ -22,7 +22,7 @@ func (s *ActorService) CreateActor(ctx context.Context, actor models.Actor) erro
 }
 
 func (s *ActorService) GetActorByID(ctx context.Context, actorID string) (models.Actor, error) {
-	return s.GetActorByID(ctx, actorID)
+	return s.actorDAO.GetActorByID(ctx, actorID)
 }
 
 func (s *ActorService) ListAllActors(ctx context.Context) ([]models.Actor, error) {

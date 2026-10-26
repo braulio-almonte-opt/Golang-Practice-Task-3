@@ -33,8 +33,16 @@ func NewActorUserDAO(client *mongo.Client, dbName string) *MongoActorDAO {
 var _ ActorDAO = (*MongoActorDAO)(nil)
 
 func (dao *MongoActorDAO) InsertActor(ctx context.Context, actor models.Actor) error {
-	_, err := dao.collection.InsertOne(ctx, actor)
-	return err
+	result, err := dao.collection.InsertOne(ctx, actor)
+	if err != nil {
+		return err
+	}
+
+	if oid, ok := result.InsertedID.(primitive.ObjectID); ok {
+		actor.ID = oid
+	}
+
+	return nil
 }
 
 func (dao *MongoActorDAO) GetActorByID(ctx context.Context, actorID string) (models.Actor, error) {

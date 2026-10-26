@@ -5,13 +5,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouter(actorController *controllers.Ac) *gin.Engine {
+func SetupRouter(actorController *controllers.ActorController) (*gin.Engine, error) {
 
 	r := gin.Default()
 
 	api := r.Group("/api/v1")
 	{
-
 		actors := api.Group("/actors")
 		{
 			actors.POST("", actorController.CreateActor)
@@ -22,5 +21,5 @@ func SetupRouter(actorController *controllers.Ac) *gin.Engine {
 		}
 	}
 
-	return r
+	return r, nil
 }

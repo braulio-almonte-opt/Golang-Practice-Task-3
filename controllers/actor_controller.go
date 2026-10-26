@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/braulio-almonte-opt/task3-moviesAPI/models"
@@ -40,6 +41,7 @@ func (ctrl *ActorController) CreateActor(c *gin.Context) {
 
 	if err := ctrl.service.CreateActor(c.Request.Context(), actor); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert actor"})
+		log.Printf("Error creating actor: %v", err)
 		return
 	}
 
