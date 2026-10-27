@@ -20,8 +20,8 @@ type FilmDAO interface {
 	UpdateFilm(ctx context.Context, filmID, filmName string, year int, directorsName string, actorNames []string) error
 	DeleteFilm(ctx context.Context, filmID string) error
 	GetAllFilmsPopulated(ctx context.Context) ([]models.FilmPopulated, error)
-	GetFilmsByDirectorName(ctx context.Context, directorName string) ([]models.FilmPopulated, error)
-	GetFilmsByActorName(ctx context.Context, actorName string) ([]models.FilmPopulated, error)
+	GetFilmsByDirectorName(ctx context.Context, directorName string, opt models.SearchOptions) ([]models.FilmPopulated, error)
+	GetFilmsByActorName(ctx context.Context, actorName string, opt models.SearchOptions) ([]models.FilmPopulated, error)
 }
 
 type MongoFilmDAO struct {
@@ -85,32 +85,46 @@ func (dao *MongoFilmDAO) GetAllFilmsPopulated(ctx context.Context) ([]models.Fil
 	return films, nil
 }
 
-func (dao *MongoFilmDAO) GetFilmsByDirectorName(ctx context.Context, directorName string) ([]models.FilmPopulated, error) {
+func (dao *MongoFilmDAO) GetFilmsByDirectorName(ctx context.Context, directorName string, opts models.SearchOptions) ([]models.FilmPopulated, error) {
 	pipeline := mongo.Pipeline{
-		bson.D{
-			primitive.E{Key: "$lookup", Value: bson.D{
-				primitive.E{Key: "from", Value: "directors"},
-				primitive.E{Key: "localField", Value: "director_id"},
-				primitive.E{Key: "foreignField", Value: "_id"},
-				primitive.E{Key: "as", Value: "director"},
-			}},
-		},
-		bson.D{
-			primitive.E{Key: "$unwind", Value: "$director"},
-		},
-		bson.D{
-			primitive.E{Key: "$match", Value: bson.D{
-				primitive.E{Key: "director.name", Value: primitive.Regex{Pattern: directorName, Options: "i"}},
-			}},
-		},
-		bson.D{
-			primitive.E{Key: "$lookup", Value: bson.D{
-				primitive.E{Key: "from", Value: "actors"},
-				primitive.E{Key: "localField", Value: "actor_ids"},
-				primitive.E{Key: "foreignField", Value: "_id"},
-				primitive.E{Key: "as", Value: "actors"},
-			}},
-		},
+		bson.D{primitive.E{Key: "$lookup", Value: bson.D{
+			primitive.E{Key: "from", Value: "directors"},
+			primitive.E{Key: "localField", Value: "director_id"},
+			primitive.E{Key: "foreignField", Value: "_id"},
+			primitive.E{Key: "as", Value: "director"},
+		}}},
+		bson.D{primitive.E{Key: "$unwind", Value: "$director"}},
+		bson.D{primitive.E{Key: "$match", Value: bson.D{
+			primitive.E{Key: "director.name", Value: primitive.Regex{Pattern: directorName, Options: "i"}},
+		}}},
+		bson.D{primitive.E{Key: "$lookup", Value: bson.D{
+			primitive.E{Key: "from", Value: "actors"},
+			primitive.E{Key: "localField", Value: "actor_ids"},
+			primitive.E{Key: "foreignField", Value: "_id"},
+			primitive.E{Key: "as", Value: "actors"},
+		}}},
+	}
+
+	if opts.Skip > 0 {
+		pipeline = append(pipeline, bson.D{primitive.E{Key: "$skip", Value: opts.Skip}})
+	}
+
+	if opts.Limit > 0 {
+		pipeline = append(pipeline, bson.D{primitive.E{Key: "$limit", Value: opts.Limit}})
+	}
+
+	if len(opts.Fields) > 0 {
+		proj := bson.D{primitive.E{Key: "_id", Value: 1}}
+		for _, field := range opts.Fields {
+			proj = append(proj, primitive.E{Key: field, Value: 1})
+		}
+		pipeline = append(pipeline, bson.D{primitive.E{Key: "$project", Value: proj}})
+	} else if len(opts.Exclude) > 0 {
+		proj := bson.D{}
+		for _, field := range opts.Exclude {
+			proj = append(proj, primitive.E{Key: field, Value: 0})
+		}
+		pipeline = append(pipeline, bson.D{primitive.E{Key: "$project", Value: proj}})
 	}
 
 	cursor, err := dao.collection.Aggregate(ctx, pipeline)
@@ -126,7 +140,7 @@ func (dao *MongoFilmDAO) GetFilmsByDirectorName(ctx context.Context, directorNam
 	return films, nil
 }
 
-func (dao *MongoFilmDAO) GetFilmsByActorName(ctx context.Context, actorName string) ([]models.FilmPopulated, error) {
+func (dao *MongoFilmDAO) GetFilmsByActorName(ctx context.Context, actorName string, opts models.SearchOptions) ([]models.FilmPopulated, error) {
 	pipeline := mongo.Pipeline{
 		bson.D{
 			primitive.E{Key: "$lookup", Value: bson.D{
@@ -152,6 +166,31 @@ func (dao *MongoFilmDAO) GetFilmsByActorName(ctx context.Context, actorName stri
 				primitive.E{Key: "actors.name", Value: primitive.Regex{Pattern: actorName, Options: "i"}},
 			}},
 		},
+	}
+
+	// 1. Add Pagination (Skip)
+	if opts.Skip > 0 {
+		pipeline = append(pipeline, bson.D{primitive.E{Key: "$skip", Value: opts.Skip}})
+	}
+
+	// 2. Add Pagination (Limit)
+	if opts.Limit > 0 {
+		pipeline = append(pipeline, bson.D{primitive.E{Key: "$limit", Value: opts.Limit}})
+	}
+
+	// 3. Add Field Projection (Retrieved or Excluded Fields)
+	if len(opts.Fields) > 0 {
+		proj := bson.D{primitive.E{Key: "_id", Value: 1}} // Always retain ID by default
+		for _, field := range opts.Fields {
+			proj = append(proj, primitive.E{Key: field, Value: 1})
+		}
+		pipeline = append(pipeline, bson.D{primitive.E{Key: "$project", Value: proj}})
+	} else if len(opts.Exclude) > 0 {
+		proj := bson.D{}
+		for _, field := range opts.Exclude {
+			proj = append(proj, primitive.E{Key: field, Value: 0})
+		}
+		pipeline = append(pipeline, bson.D{primitive.E{Key: "$project", Value: proj}})
 	}
 
 	cursor, err := dao.collection.Aggregate(ctx, pipeline)

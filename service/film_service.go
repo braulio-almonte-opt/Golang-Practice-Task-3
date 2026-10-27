@@ -86,10 +86,10 @@ func (s *FilmService) GetAllFilmsPopulated(ctx context.Context) ([]models.FilmPo
 	return s.filmDAO.GetAllFilmsPopulated(ctx)
 }
 
-func (s *FilmService) GetFilmsByDirectorName(ctx context.Context, directorName string) ([]models.FilmPopulated, error) {
-	return s.filmDAO.GetFilmsByDirectorName(ctx, directorName)
+func (s *FilmService) GetFilmsByDirectorName(ctx context.Context, directorName string, opts models.SearchOptions) ([]models.FilmPopulated, error) {
+	return s.filmDAO.GetFilmsByDirectorName(ctx, directorName, opts)
 }
 
-func (s *FilmService) GetFilmsByActorName(ctx context.Context, actorName string) ([]models.FilmPopulated, error) {
-	return s.filmDAO.GetFilmsByActorName(ctx, actorName)
+func (s *FilmService) GetFilmsByActorName(ctx context.Context, actorName string, opts models.SearchOptions) ([]models.FilmPopulated, error) {
+	return s.filmDAO.GetFilmsByActorName(ctx, actorName, opts)
 }

@@ -3,6 +3,8 @@ package controllers
 import (
 	"log"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/braulio-almonte-opt/task3-moviesAPI/models"
 	"github.com/braulio-almonte-opt/task3-moviesAPI/service"
@@ -158,15 +160,38 @@ func (ctrl *FilmController) GetAllFilmsPopulated(c *gin.Context) {
 }
 
 func (ctrl *FilmController) GetFilmsByDirectorName(c *gin.Context) {
-	name := c.Query("name")
-	if name == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Director name query parameter is required"})
+	directorName := c.Query("name")
+	if directorName == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Query parameter 'name' is required"})
 		return
 	}
 
-	films, err := ctrl.service.GetFilmsByDirectorName(c.Request.Context(), name)
+	skipStr := c.DefaultQuery("start", c.DefaultQuery("skip", "0"))
+	limitStr := c.DefaultQuery("limit", "0")
+
+	skip, _ := strconv.ParseInt(skipStr, 10, 64)
+	limit, _ := strconv.ParseInt(limitStr, 10, 64)
+
+	var fields []string
+	if f := c.Query("fields"); f != "" {
+		fields = strings.Split(f, ",")
+	}
+
+	var exclude []string
+	if e := c.Query("exclude"); e != "" {
+		exclude = strings.Split(e, ",")
+	}
+
+	opts := models.SearchOptions{
+		Skip:    skip,
+		Limit:   limit,
+		Fields:  fields,
+		Exclude: exclude,
+	}
+
+	films, err := ctrl.service.GetFilmsByDirectorName(c.Request.Context(), directorName, opts)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch films by director name"})
 		return
 	}
 
@@ -174,15 +199,41 @@ func (ctrl *FilmController) GetFilmsByDirectorName(c *gin.Context) {
 }
 
 func (ctrl *FilmController) GetFilmsByActorName(c *gin.Context) {
-	name := c.Query("name")
-	if name == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Actor name query parameter is required"})
+	actorName := c.Query("name")
+	if actorName == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Query parameter 'name' is required"})
 		return
 	}
 
-	films, err := ctrl.service.GetFilmsByActorName(c.Request.Context(), name)
+	// Parse pagination parameters (supports both 'start' and 'skip')
+	skipStr := c.DefaultQuery("start", c.DefaultQuery("skip", "0"))
+	limitStr := c.DefaultQuery("limit", "0")
+
+	skip, _ := strconv.ParseInt(skipStr, 10, 64)
+	limit, _ := strconv.ParseInt(limitStr, 10, 64)
+
+	// Parse fields projection (e.g., ?fields=title,year)
+	var fields []string
+	if f := c.Query("fields"); f != "" {
+		fields = strings.Split(f, ",")
+	}
+
+	// Parse excluded fields projection (e.g., ?exclude=director)
+	var exclude []string
+	if e := c.Query("exclude"); e != "" {
+		exclude = strings.Split(e, ",")
+	}
+
+	opts := models.SearchOptions{
+		Skip:    skip,
+		Limit:   limit,
+		Fields:  fields,
+		Exclude: exclude,
+	}
+
+	films, err := ctrl.service.GetFilmsByActorName(c.Request.Context(), actorName, opts)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch films by actor name"})
 		return
 	}
 
