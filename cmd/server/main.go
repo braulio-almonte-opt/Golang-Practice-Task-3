@@ -48,7 +48,7 @@ func run() error {
 	directorController := controllers.NewDirectorController(directorService)
 
 	filmDAO := dao.NewFilmDAO(client, dbName)
-	filmService := service.NewFilmService(filmDAO, directorDAO)
+	filmService := service.NewFilmService(filmDAO, directorDAO, actorDAO)
 	filmController := controllers.NewFilmController(filmService)
 
 	r, err := SetupRouter(actorController, directorController, filmController)

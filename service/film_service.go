@@ -12,12 +12,14 @@ import (
 type FilmService struct {
 	filmDAO     dao.FilmDAO
 	directorDAO dao.DirectorDAO
+	actorDAO    dao.ActorDAO
 }
 
-func NewFilmService(filmDAO dao.FilmDAO, directorDAO dao.DirectorDAO) *FilmService {
+func NewFilmService(filmDAO dao.FilmDAO, directorDAO dao.DirectorDAO, actorDAO dao.ActorDAO) *FilmService {
 	return &FilmService{
 		filmDAO:     filmDAO,
 		directorDAO: directorDAO,
+		actorDAO:    actorDAO,
 	}
 }
 
@@ -74,4 +76,8 @@ func (s *FilmService) DeleteFilm(ctx context.Context, filmID string) error {
 
 func (s *FilmService) GetFilmsByDirector(ctx context.Context, directorIDStr string) ([]models.Film, error) {
 	return s.filmDAO.GetFilmByDirector(ctx, directorIDStr)
+}
+
+func (s *FilmService) GetFilmsByActor(ctx context.Context, actorIDSts string) ([]models.Film, error) {
+	return s.filmDAO.GetFilmByActor(ctx, actorIDSts)
 }

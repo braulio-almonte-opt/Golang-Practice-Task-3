@@ -42,6 +42,7 @@ func SetupRouter(
 			films.DELETE("/:id", filmController.DeleteFilm)
 
 			films.GET("/director/:directorId", filmController.GetFilmsByDirector)
+			films.GET("/actor/:actorId", filmController.GetFilmsByActor)
 		}
 
 	}

@@ -14,6 +14,7 @@ type FilmDAO interface {
 	InsertFilm(ctx context.Context, film models.Film) error
 	GetFilmByName(ctx context.Context, filmName string) (models.Film, error)
 	GetFilmByDirector(ctx context.Context, directorID string) ([]models.Film, error)
+	GetFilmByActor(ctx context.Context, actorID string) ([]models.Film, error)
 	GetFilmByID(ctx context.Context, filmID string) (models.Film, error)
 	ListAll(ctx context.Context) ([]models.Film, error)
 	UpdateFilm(ctx context.Context, filmID, filmName string, year int, directorsName string, actorNames []string) error
@@ -59,6 +60,27 @@ func (dao *MongoFilmDAO) GetFilmByDirector(ctx context.Context, directorID strin
 	}
 	var films []models.Film
 	filter := bson.D{{Key: "director_id", Value: id}}
+
+	cursor, err := dao.collection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	if err := cursor.All(ctx, &films); err != nil {
+		return nil, err
+	}
+	return films, nil
+}
+
+func (dao *MongoFilmDAO) GetFilmByActor(ctx context.Context, actorID string) ([]models.Film, error) {
+	id, err := primitive.ObjectIDFromHex(actorID)
+	if err != nil {
+		return nil, err
+	}
+	var films []models.Film
+
+	filter := bson.M{"actor_ids": id}
 
 	cursor, err := dao.collection.Find(ctx, filter)
 	if err != nil {

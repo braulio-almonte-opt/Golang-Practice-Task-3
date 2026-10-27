@@ -130,3 +130,19 @@ func (ctrl *FilmController) GetFilmsByDirector(c *gin.Context) {
 
 	c.JSON(http.StatusOK, response)
 }
+
+func (ctrl *FilmController) GetFilmsByActor(c *gin.Context) {
+	actorId := c.Param("actorId")
+	films, err := ctrl.service.GetFilmsByActor(c.Request.Context(), actorId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch films for actor"})
+		return
+	}
+
+	response := make([]FilmResponse, len(films))
+	for i, film := range films {
+		response[i] = NewFilmResponse(film)
+	}
+
+	c.JSON(http.StatusOK, response)
+}
