@@ -61,8 +61,6 @@ A high-performance RESTful microservice built with **Go**, **Gin**, and **MongoD
 3. **Configure Environment Variables:**  
    Create a `.env` file in the root directory (or configure your environment variables directly):
    ```env
-   PORT=8080
-   MONGO_URI=mongodb://localhost:27017
    DB_NAME=movies_db
    ```
 
