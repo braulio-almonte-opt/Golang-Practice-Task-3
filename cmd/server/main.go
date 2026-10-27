@@ -38,7 +38,7 @@ func run() error {
 	if err := godotenv.Load(""); err != nil {
 		log.Println("No .env file found")
 	}
-	dbName := "moviesAPI"
+	dbName := "moviesAPI" //Note: Env loading is not working, I put the name here until that is fixed
 	actorDAO := dao.NewActorDAO(client, dbName)
 	actorService := service.NewActorService(actorDAO)
 	actorController := controllers.NewActorController(actorService)
