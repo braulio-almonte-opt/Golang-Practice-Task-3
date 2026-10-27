@@ -36,13 +36,16 @@ func SetupRouter(
 		films := api.Group("/films")
 		{
 			films.POST("", filmController.CreateFilm)
-			films.GET("", filmController.GetAllFilms)
+			films.GET("", filmController.GetAllFilmsPopulated)
 			films.GET("/:id", filmController.GetFilmByID)
 			films.PUT("/:id", filmController.UpdateFilm)
 			films.DELETE("/:id", filmController.DeleteFilm)
 
 			films.GET("/director/:directorId", filmController.GetFilmsByDirector)
 			films.GET("/actor/:actorId", filmController.GetFilmsByActor)
+
+			films.GET("/search/director", filmController.GetFilmsByDirectorName)
+			films.GET("/search/actor", filmController.GetFilmsByActorName)
 		}
 
 	}

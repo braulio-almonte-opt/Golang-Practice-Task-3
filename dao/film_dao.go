@@ -19,6 +19,9 @@ type FilmDAO interface {
 	ListAll(ctx context.Context) ([]models.Film, error)
 	UpdateFilm(ctx context.Context, filmID, filmName string, year int, directorsName string, actorNames []string) error
 	DeleteFilm(ctx context.Context, filmID string) error
+	GetAllFilmsPopulated(ctx context.Context) ([]models.FilmPopulated, error)
+	GetFilmsByDirectorName(ctx context.Context, directorName string) ([]models.FilmPopulated, error)
+	GetFilmsByActorName(ctx context.Context, actorName string) ([]models.FilmPopulated, error)
 }
 
 type MongoFilmDAO struct {
@@ -44,6 +47,112 @@ func (dao *MongoFilmDAO) InsertFilm(ctx context.Context, film models.Film) error
 	}
 
 	return nil
+}
+
+func (dao *MongoFilmDAO) GetAllFilmsPopulated(ctx context.Context) ([]models.FilmPopulated, error) {
+	pipeline := mongo.Pipeline{
+		// 1. Join with directors collection
+		{{"$lookup", bson.D{
+			{"from", "directors"},
+			{"localField", "director_id"},
+			{"foreignField", "_id"},
+			{"as", "director"},
+		}}},
+		// 2. Unwind director array into an object
+		{{"$unwind", "$director"}},
+		// 3. Join with actors collection (actors is an array of IDs, $lookup handles arrays automatically)
+		{{"$lookup", bson.D{
+			{"from", "actors"},
+			{"localField", "actor_ids"},
+			{"foreignField", "_id"},
+			{"as", "actors"},
+		}}},
+	}
+
+	cursor, err := dao.collection.Aggregate(ctx, pipeline)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var films []models.FilmPopulated
+	if err := cursor.All(ctx, &films); err != nil {
+		return nil, err
+	}
+	return films, nil
+}
+
+func (dao *MongoFilmDAO) GetFilmsByDirectorName(ctx context.Context, directorName string) ([]models.FilmPopulated, error) {
+	pipeline := mongo.Pipeline{
+		// 1. Lookup director
+		{{"$lookup", bson.D{
+			{"from", "directors"},
+			{"localField", "director_id"},
+			{"foreignField", "_id"},
+			{"as", "director"},
+		}}},
+		// 2. Unwind director
+		{{"$unwind", "$director"}},
+		// 3. Match director name case-insensitively
+		{{"$match", bson.D{
+			{"director.name", primitive.Regex{Pattern: directorName, Options: "i"}},
+		}}},
+		// 4. Lookup actors
+		{{"$lookup", bson.D{
+			{"from", "actors"},
+			{"localField", "actor_ids"},
+			{"foreignField", "_id"},
+			{"as", "actors"},
+		}}},
+	}
+
+	cursor, err := dao.collection.Aggregate(ctx, pipeline)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var films []models.FilmPopulated
+	if err := cursor.All(ctx, &films); err != nil {
+		return nil, err
+	}
+	return films, nil
+}
+
+func (dao *MongoFilmDAO) GetFilmsByActorName(ctx context.Context, actorName string) ([]models.FilmPopulated, error) {
+	pipeline := mongo.Pipeline{
+		// 1. Lookup director
+		{{"$lookup", bson.D{
+			{"from", "directors"},
+			{"localField", "director_id"},
+			{"foreignField", "_id"},
+			{"as", "director"},
+		}}},
+		{{"$unwind", "$director"}},
+		// 2. Lookup actors
+		{{"$lookup", bson.D{
+			{"from", "actors"},
+			{"localField", "actor_ids"},
+			{"foreignField", "_id"},
+			{"as", "actors"},
+		}}},
+		// 3. Match if any actor in the array matches the name case-insensitively
+		{{"$match", bson.D{
+			{"actors.name", primitive.Regex{Pattern: actorName, Options: "i"}},
+		}}},
+	}
+
+	cursor, err := dao.collection.Aggregate(ctx, pipeline)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var films []models.FilmPopulated
+	if err := cursor.All(ctx, &films); err != nil {
+		return nil, err
+	}
+	return films, nil
 }
 
 func (dao *MongoFilmDAO) GetFilmByName(ctx context.Context, filmName string) (models.Film, error) {

@@ -146,3 +146,45 @@ func (ctrl *FilmController) GetFilmsByActor(c *gin.Context) {
 
 	c.JSON(http.StatusOK, response)
 }
+
+func (ctrl *FilmController) GetAllFilmsPopulated(c *gin.Context) {
+	films, err := ctrl.service.GetAllFilmsPopulated(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch populated films"})
+		return
+	}
+
+	c.JSON(http.StatusOK, films)
+}
+
+func (ctrl *FilmController) GetFilmsByDirectorName(c *gin.Context) {
+	name := c.Query("name")
+	if name == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Director name query parameter is required"})
+		return
+	}
+
+	films, err := ctrl.service.GetFilmsByDirectorName(c.Request.Context(), name)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, films)
+}
+
+func (ctrl *FilmController) GetFilmsByActorName(c *gin.Context) {
+	name := c.Query("name")
+	if name == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Actor name query parameter is required"})
+		return
+	}
+
+	films, err := ctrl.service.GetFilmsByActorName(c.Request.Context(), name)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, films)
+}
