@@ -137,12 +137,11 @@ const actor2Id = new ObjectId();
 db.directors.insertOne({
   _id: directorId,
   name: "Christopher Nolan",
-  bio: "British-American filmmaker."
 });
 
 db.actors.insertMany([
-  { _id: actor1Id, name: "Matthew McConaughey", biography: "Actor" },
-  { _id: actor2Id, name: "Anne Hathaway", biography: "Actress" }
+  { _id: actor1Id, name: "Matthew McConaughey"},
+  { _id: actor2Id, name: "Anne Hathaway"}
 ]);
 
 db.films.insertOne({
