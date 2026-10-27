@@ -51,19 +51,25 @@ func (dao *MongoFilmDAO) InsertFilm(ctx context.Context, film models.Film) error
 
 func (dao *MongoFilmDAO) GetAllFilmsPopulated(ctx context.Context) ([]models.FilmPopulated, error) {
 	pipeline := mongo.Pipeline{
-		{{"$lookup", bson.D{
-			{"from", "directors"},
-			{"localField", "director_id"},
-			{"foreignField", "_id"},
-			{"as", "director"},
-		}}},
-		{{"$unwind", "$director"}},
-		{{"$lookup", bson.D{
-			{"from", "actors"},
-			{"localField", "actor_ids"},
-			{"foreignField", "_id"},
-			{"as", "actors"},
-		}}},
+		bson.D{
+			primitive.E{Key: "$lookup", Value: bson.D{
+				primitive.E{Key: "from", Value: "directors"},
+				primitive.E{Key: "localField", Value: "director_id"},
+				primitive.E{Key: "foreignField", Value: "_id"},
+				primitive.E{Key: "as", Value: "director"},
+			}},
+		},
+		bson.D{
+			primitive.E{Key: "$unwind", Value: "$director"},
+		},
+		bson.D{
+			primitive.E{Key: "$lookup", Value: bson.D{
+				primitive.E{Key: "from", Value: "actors"},
+				primitive.E{Key: "localField", Value: "actor_ids"},
+				primitive.E{Key: "foreignField", Value: "_id"},
+				primitive.E{Key: "as", Value: "actors"},
+			}},
+		},
 	}
 
 	cursor, err := dao.collection.Aggregate(ctx, pipeline)
@@ -81,25 +87,30 @@ func (dao *MongoFilmDAO) GetAllFilmsPopulated(ctx context.Context) ([]models.Fil
 
 func (dao *MongoFilmDAO) GetFilmsByDirectorName(ctx context.Context, directorName string) ([]models.FilmPopulated, error) {
 	pipeline := mongo.Pipeline{
-		{{"$lookup", bson.D{
-			{"from", "directors"},
-			{"localField", "director_id"},
-			{"foreignField", "_id"},
-			{"as", "director"},
-		}}},
-
-		{{"$unwind", "$director"}},
-
-		{{"$match", bson.D{
-			{"director.name", primitive.Regex{Pattern: directorName, Options: "i"}},
-		}}},
-
-		{{"$lookup", bson.D{
-			{"from", "actors"},
-			{"localField", "actor_ids"},
-			{"foreignField", "_id"},
-			{"as", "actors"},
-		}}},
+		bson.D{
+			primitive.E{Key: "$lookup", Value: bson.D{
+				primitive.E{Key: "from", Value: "directors"},
+				primitive.E{Key: "localField", Value: "director_id"},
+				primitive.E{Key: "foreignField", Value: "_id"},
+				primitive.E{Key: "as", Value: "director"},
+			}},
+		},
+		bson.D{
+			primitive.E{Key: "$unwind", Value: "$director"},
+		},
+		bson.D{
+			primitive.E{Key: "$match", Value: bson.D{
+				primitive.E{Key: "director.name", Value: primitive.Regex{Pattern: directorName, Options: "i"}},
+			}},
+		},
+		bson.D{
+			primitive.E{Key: "$lookup", Value: bson.D{
+				primitive.E{Key: "from", Value: "actors"},
+				primitive.E{Key: "localField", Value: "actor_ids"},
+				primitive.E{Key: "foreignField", Value: "_id"},
+				primitive.E{Key: "as", Value: "actors"},
+			}},
+		},
 	}
 
 	cursor, err := dao.collection.Aggregate(ctx, pipeline)
@@ -117,25 +128,30 @@ func (dao *MongoFilmDAO) GetFilmsByDirectorName(ctx context.Context, directorNam
 
 func (dao *MongoFilmDAO) GetFilmsByActorName(ctx context.Context, actorName string) ([]models.FilmPopulated, error) {
 	pipeline := mongo.Pipeline{
-
-		{{"$lookup", bson.D{
-			{"from", "directors"},
-			{"localField", "director_id"},
-			{"foreignField", "_id"},
-			{"as", "director"},
-		}}},
-		{{"$unwind", "$director"}},
-
-		{{"$lookup", bson.D{
-			{"from", "actors"},
-			{"localField", "actor_ids"},
-			{"foreignField", "_id"},
-			{"as", "actors"},
-		}}},
-
-		{{"$match", bson.D{
-			{"actors.name", primitive.Regex{Pattern: actorName, Options: "i"}},
-		}}},
+		bson.D{
+			primitive.E{Key: "$lookup", Value: bson.D{
+				primitive.E{Key: "from", Value: "directors"},
+				primitive.E{Key: "localField", Value: "director_id"},
+				primitive.E{Key: "foreignField", Value: "_id"},
+				primitive.E{Key: "as", Value: "director"},
+			}},
+		},
+		bson.D{
+			primitive.E{Key: "$unwind", Value: "$director"},
+		},
+		bson.D{
+			primitive.E{Key: "$lookup", Value: bson.D{
+				primitive.E{Key: "from", Value: "actors"},
+				primitive.E{Key: "localField", Value: "actor_ids"},
+				primitive.E{Key: "foreignField", Value: "_id"},
+				primitive.E{Key: "as", Value: "actors"},
+			}},
+		},
+		bson.D{
+			primitive.E{Key: "$match", Value: bson.D{
+				primitive.E{Key: "actors.name", Value: primitive.Regex{Pattern: actorName, Options: "i"}},
+			}},
+		},
 	}
 
 	cursor, err := dao.collection.Aggregate(ctx, pipeline)
