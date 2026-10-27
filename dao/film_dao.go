@@ -51,16 +51,13 @@ func (dao *MongoFilmDAO) InsertFilm(ctx context.Context, film models.Film) error
 
 func (dao *MongoFilmDAO) GetAllFilmsPopulated(ctx context.Context) ([]models.FilmPopulated, error) {
 	pipeline := mongo.Pipeline{
-		// 1. Join with directors collection
 		{{"$lookup", bson.D{
 			{"from", "directors"},
 			{"localField", "director_id"},
 			{"foreignField", "_id"},
 			{"as", "director"},
 		}}},
-		// 2. Unwind director array into an object
 		{{"$unwind", "$director"}},
-		// 3. Join with actors collection (actors is an array of IDs, $lookup handles arrays automatically)
 		{{"$lookup", bson.D{
 			{"from", "actors"},
 			{"localField", "actor_ids"},
@@ -84,20 +81,19 @@ func (dao *MongoFilmDAO) GetAllFilmsPopulated(ctx context.Context) ([]models.Fil
 
 func (dao *MongoFilmDAO) GetFilmsByDirectorName(ctx context.Context, directorName string) ([]models.FilmPopulated, error) {
 	pipeline := mongo.Pipeline{
-		// 1. Lookup director
 		{{"$lookup", bson.D{
 			{"from", "directors"},
 			{"localField", "director_id"},
 			{"foreignField", "_id"},
 			{"as", "director"},
 		}}},
-		// 2. Unwind director
+
 		{{"$unwind", "$director"}},
-		// 3. Match director name case-insensitively
+
 		{{"$match", bson.D{
 			{"director.name", primitive.Regex{Pattern: directorName, Options: "i"}},
 		}}},
-		// 4. Lookup actors
+
 		{{"$lookup", bson.D{
 			{"from", "actors"},
 			{"localField", "actor_ids"},
@@ -121,7 +117,7 @@ func (dao *MongoFilmDAO) GetFilmsByDirectorName(ctx context.Context, directorNam
 
 func (dao *MongoFilmDAO) GetFilmsByActorName(ctx context.Context, actorName string) ([]models.FilmPopulated, error) {
 	pipeline := mongo.Pipeline{
-		// 1. Lookup director
+
 		{{"$lookup", bson.D{
 			{"from", "directors"},
 			{"localField", "director_id"},
@@ -129,14 +125,14 @@ func (dao *MongoFilmDAO) GetFilmsByActorName(ctx context.Context, actorName stri
 			{"as", "director"},
 		}}},
 		{{"$unwind", "$director"}},
-		// 2. Lookup actors
+
 		{{"$lookup", bson.D{
 			{"from", "actors"},
 			{"localField", "actor_ids"},
 			{"foreignField", "_id"},
 			{"as", "actors"},
 		}}},
-		// 3. Match if any actor in the array matches the name case-insensitively
+
 		{{"$match", bson.D{
 			{"actors.name", primitive.Regex{Pattern: actorName, Options: "i"}},
 		}}},

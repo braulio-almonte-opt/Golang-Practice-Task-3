@@ -1,6 +1,5 @@
 package models
 
-// models/film_pop.go (or inside your models package)
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
 type DirectorSummary struct {
