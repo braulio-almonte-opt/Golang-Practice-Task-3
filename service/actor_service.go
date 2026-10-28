@@ -20,11 +20,13 @@ func NewActorService(actorDAO dao.ActorDAO) *ActorService {
 	}
 }
 
-func (s *ActorService) CreateActor(ctx context.Context, actor models.Actor) error {
+func (s *ActorService) CreateActor(ctx context.Context, actor models.Actor) (models.Actor, error) {
 	trimmedNamne := strings.TrimSpace(actor.Name)
 	if trimmedNamne == "" {
-		return fmt.Errorf("Empty actor name")
+		return models.Actor{}, fmt.Errorf("Empty actor name")
 	}
+	actor.Name = trimmedNamne
+
 	return s.actorDAO.InsertActor(ctx, actor)
 }
 

@@ -11,7 +11,7 @@ import (
 )
 
 type DirectorDAO interface {
-	InsertDirector(ctx context.Context, director models.Director) error
+	InsertDirector(ctx context.Context, director models.Director) (models.Director, error)
 	GetDirectorByName(ctx context.Context, directorName string) (models.Director, error)
 	GetDirectorByID(ctx context.Context, directorID string) (models.Director, error)
 	FindAllDirectors(ctx context.Context, directorName string) ([]models.Director, error)
@@ -32,17 +32,17 @@ func NewDirectorDAO(client *mongo.Client, dbName string) *MongoDirectorDAO {
 
 var _ DirectorDAO = (*MongoDirectorDAO)(nil)
 
-func (dao *MongoDirectorDAO) InsertDirector(ctx context.Context, director models.Director) error {
+func (dao *MongoDirectorDAO) InsertDirector(ctx context.Context, director models.Director) (models.Director, error) {
 	result, err := dao.collection.InsertOne(ctx, director)
 	if err != nil {
-		return err
+		return models.Director{}, err
 	}
 
 	if oid, ok := result.InsertedID.(primitive.ObjectID); ok {
 		director.ID = oid
 	}
 
-	return nil
+	return director, nil
 }
 
 func (dao *MongoDirectorDAO) GetDirectorByID(ctx context.Context, directorID string) (models.Director, error) {

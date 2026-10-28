@@ -11,7 +11,7 @@ import (
 )
 
 type ActorDAO interface {
-	InsertActor(ctx context.Context, actor models.Actor) error
+	InsertActor(ctx context.Context, actor models.Actor) (models.Actor, error)
 	GetActorByName(ctx context.Context, actorName string) (models.Actor, error)
 	GetActorByID(ctx context.Context, actorID string) (models.Actor, error)
 	FindAllActors(ctx context.Context, actorName string) ([]models.Actor, error)
@@ -32,17 +32,17 @@ func NewActorDAO(client *mongo.Client, dbName string) *MongoActorDAO {
 
 var _ ActorDAO = (*MongoActorDAO)(nil)
 
-func (dao *MongoActorDAO) InsertActor(ctx context.Context, actor models.Actor) error {
+func (dao *MongoActorDAO) InsertActor(ctx context.Context, actor models.Actor) (models.Actor, error) {
 	result, err := dao.collection.InsertOne(ctx, actor)
 	if err != nil {
-		return err
+		return models.Actor{}, err
 	}
 
 	if oid, ok := result.InsertedID.(primitive.ObjectID); ok {
 		actor.ID = oid
 	}
 
-	return nil
+	return actor, nil
 }
 
 func (dao *MongoActorDAO) GetActorByID(ctx context.Context, actorID string) (models.Actor, error) {

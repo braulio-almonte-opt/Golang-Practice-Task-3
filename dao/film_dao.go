@@ -11,7 +11,7 @@ import (
 )
 
 type FilmDAO interface {
-	InsertFilm(ctx context.Context, film models.Film) error
+	InsertFilm(ctx context.Context, film models.Film) (models.Film, error)
 	GetFilmByName(ctx context.Context, filmName string) (models.Film, error)
 	GetFilmByDirector(ctx context.Context, directorID string) ([]models.Film, error)
 	GetFilmByActor(ctx context.Context, actorID string) ([]models.Film, error)
@@ -36,17 +36,17 @@ func NewFilmDAO(client *mongo.Client, dbName string) *MongoFilmDAO {
 
 var _ FilmDAO = (*MongoFilmDAO)(nil)
 
-func (dao *MongoFilmDAO) InsertFilm(ctx context.Context, film models.Film) error {
+func (dao *MongoFilmDAO) InsertFilm(ctx context.Context, film models.Film) (models.Film, error) {
 	result, err := dao.collection.InsertOne(ctx, film)
 	if err != nil {
-		return err
+		return models.Film{}, err
 	}
 
 	if oid, ok := result.InsertedID.(primitive.ObjectID); ok {
 		film.ID = oid
 	}
 
-	return nil
+	return film, nil
 }
 
 func (dao *MongoFilmDAO) GetAllFilmsPopulated(ctx context.Context) ([]models.FilmPopulated, error) {

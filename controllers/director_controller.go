@@ -38,12 +38,13 @@ func (ctrl *DirectorController) CreateDirector(c *gin.Context) {
 		return
 	}
 
-	if err := ctrl.service.CreateDirector(c.Request.Context(), director); err != nil {
+	createdDirector, err := ctrl.service.CreateDirector(c.Request.Context(), director)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert director"})
 		return
 	}
 
-	c.JSON(http.StatusCreated, NewDirectorResponse(director))
+	c.JSON(http.StatusCreated, NewDirectorResponse(createdDirector))
 }
 
 func (ctrl *DirectorController) GetDirectorByID(c *gin.Context) {

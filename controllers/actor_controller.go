@@ -39,13 +39,14 @@ func (ctrl *ActorController) CreateActor(c *gin.Context) {
 		return
 	}
 
-	if err := ctrl.service.CreateActor(c.Request.Context(), actor); err != nil {
+	createdActor, err := ctrl.service.CreateActor(c.Request.Context(), actor)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert actor"})
 		log.Printf("Error creating actor: %v", err)
 		return
 	}
 
-	c.JSON(http.StatusCreated, newActorResponse(actor))
+	c.JSON(http.StatusCreated, newActorResponse(createdActor))
 }
 
 func (ctrl *ActorController) GetActorByID(c *gin.Context) {

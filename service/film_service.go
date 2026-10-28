@@ -58,11 +58,12 @@ func (s *FilmService) CreateFilm(ctx context.Context, title string, year int, di
 		ActorIDs:   actorIDs,
 	}
 
-	if err := s.filmDAO.InsertFilm(ctx, film); err != nil {
+	createdFilm, err := s.filmDAO.InsertFilm(ctx, film)
+	if err != nil {
 		return models.Film{}, err
 	}
 
-	return film, nil
+	return createdFilm, nil
 }
 
 func (s *FilmService) GetFilmByID(ctx context.Context, filmID string) (models.Film, error) {

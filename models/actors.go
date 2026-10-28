@@ -5,6 +5,6 @@ import (
 )
 
 type Actor struct {
-	ID   primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+	ID   primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
 	Name string             `bson:"name" json:"name"`
 }

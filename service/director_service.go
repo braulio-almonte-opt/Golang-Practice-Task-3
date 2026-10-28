@@ -20,11 +20,13 @@ func NewDirectorService(directorDAO dao.DirectorDAO) *DirectorService {
 	}
 }
 
-func (s *DirectorService) CreateDirector(ctx context.Context, director models.Director) error {
+func (s *DirectorService) CreateDirector(ctx context.Context, director models.Director) (models.Director, error) {
 	trimmedNamne := strings.TrimSpace(director.Name)
 	if trimmedNamne == "" {
-		return fmt.Errorf("Empty director name")
+		return models.Director{}, fmt.Errorf("Empty director name")
 	}
+	director.Name = trimmedNamne
+
 	return s.directorDAO.InsertDirector(ctx, director)
 }
 
