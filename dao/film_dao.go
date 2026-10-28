@@ -74,13 +74,13 @@ func (dao *MongoFilmDAO) GetAllFilmsPopulated(ctx context.Context) ([]models.Fil
 
 	cursor, err := dao.collection.Aggregate(ctx, pipeline)
 	if err != nil {
-		return nil, err
+		return []models.FilmPopulated{}, err
 	}
 	defer cursor.Close(ctx)
 
 	var films []models.FilmPopulated
 	if err := cursor.All(ctx, &films); err != nil {
-		return nil, err
+		return []models.FilmPopulated{}, err
 	}
 	return films, nil
 }
@@ -129,13 +129,13 @@ func (dao *MongoFilmDAO) GetFilmsByDirectorName(ctx context.Context, directorNam
 
 	cursor, err := dao.collection.Aggregate(ctx, pipeline)
 	if err != nil {
-		return nil, err
+		return []models.FilmPopulated{}, err
 	}
 	defer cursor.Close(ctx)
 
 	var films []models.FilmPopulated
 	if err := cursor.All(ctx, &films); err != nil {
-		return nil, err
+		return []models.FilmPopulated{}, err
 	}
 	return films, nil
 }
@@ -168,19 +168,16 @@ func (dao *MongoFilmDAO) GetFilmsByActorName(ctx context.Context, actorName stri
 		},
 	}
 
-	// 1. Add Pagination (Skip)
 	if opts.Skip > 0 {
 		pipeline = append(pipeline, bson.D{primitive.E{Key: "$skip", Value: opts.Skip}})
 	}
 
-	// 2. Add Pagination (Limit)
 	if opts.Limit > 0 {
 		pipeline = append(pipeline, bson.D{primitive.E{Key: "$limit", Value: opts.Limit}})
 	}
 
-	// 3. Add Field Projection (Retrieved or Excluded Fields)
 	if len(opts.Fields) > 0 {
-		proj := bson.D{primitive.E{Key: "_id", Value: 1}} // Always retain ID by default
+		proj := bson.D{primitive.E{Key: "_id", Value: 1}}
 		for _, field := range opts.Fields {
 			proj = append(proj, primitive.E{Key: field, Value: 1})
 		}
@@ -195,13 +192,13 @@ func (dao *MongoFilmDAO) GetFilmsByActorName(ctx context.Context, actorName stri
 
 	cursor, err := dao.collection.Aggregate(ctx, pipeline)
 	if err != nil {
-		return nil, err
+		return []models.FilmPopulated{}, err
 	}
 	defer cursor.Close(ctx)
 
 	var films []models.FilmPopulated
 	if err := cursor.All(ctx, &films); err != nil {
-		return nil, err
+		return []models.FilmPopulated{}, err
 	}
 	return films, nil
 }
@@ -216,14 +213,14 @@ func (dao *MongoFilmDAO) GetFilmByName(ctx context.Context, filmName string) (mo
 func (dao *MongoFilmDAO) GetFilmByDirector(ctx context.Context, directorID string) ([]models.Film, error) {
 	id, err := primitive.ObjectIDFromHex(directorID)
 	if err != nil {
-		return nil, err
+		return []models.Film{}, err
 	}
 	var films []models.Film
 	filter := bson.D{{Key: "director_id", Value: id}}
 
 	cursor, err := dao.collection.Find(ctx, filter)
 	if err != nil {
-		return nil, err
+		return []models.Film{}, err
 	}
 	defer cursor.Close(ctx)
 
@@ -236,7 +233,7 @@ func (dao *MongoFilmDAO) GetFilmByDirector(ctx context.Context, directorID strin
 func (dao *MongoFilmDAO) GetFilmByActor(ctx context.Context, actorID string) ([]models.Film, error) {
 	id, err := primitive.ObjectIDFromHex(actorID)
 	if err != nil {
-		return nil, err
+		return []models.Film{}, err
 	}
 	var films []models.Film
 
@@ -244,7 +241,7 @@ func (dao *MongoFilmDAO) GetFilmByActor(ctx context.Context, actorID string) ([]
 
 	cursor, err := dao.collection.Find(ctx, filter)
 	if err != nil {
-		return nil, err
+		return []models.Film{}, err
 	}
 	defer cursor.Close(ctx)
 
@@ -258,13 +255,13 @@ func (dao *MongoFilmDAO) GetFilmByID(ctx context.Context, filmID string) (models
 	var film models.Film
 	id, err := primitive.ObjectIDFromHex(filmID)
 	if err != nil {
-		return film, err
+		return models.Film{}, err
 	}
 
 	filter := bson.M{"_id": id}
 	err = dao.collection.FindOne(ctx, filter).Decode(&film)
 	if err != nil {
-		return film, err
+		return models.Film{}, err
 	}
 
 	return film, nil
@@ -275,12 +272,12 @@ func (dao *MongoFilmDAO) ListAll(ctx context.Context) ([]models.Film, error) {
 	filter := bson.M{}
 	cursor, err := dao.collection.Find(ctx, filter)
 	if err != nil {
-		return nil, err
+		return []models.Film{}, err
 	}
 
 	defer cursor.Close(ctx)
 	if err := cursor.All(ctx, &films); err != nil {
-		return nil, err
+		return []models.Film{}, err
 	}
 
 	return films, nil

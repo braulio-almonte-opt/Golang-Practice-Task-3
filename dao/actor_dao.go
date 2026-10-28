@@ -49,12 +49,12 @@ func (dao *MongoActorDAO) GetActorByID(ctx context.Context, actorID string) (mod
 	var actor models.Actor
 	id, err := primitive.ObjectIDFromHex(actorID)
 	if err != nil {
-		return actor, err
+		return models.Actor{}, err
 	}
 	filter := bson.M{"_id": id}
 	err = dao.collection.FindOne(ctx, filter).Decode(&actor)
 	if err != nil {
-		return actor, err
+		return models.Actor{}, err
 	}
 	return actor, nil
 }
@@ -72,12 +72,12 @@ func (dao *MongoActorDAO) FindAllActors(ctx context.Context, actorName string) (
 
 	cursor, err := dao.collection.Find(ctx, filter)
 	if err != nil {
-		return nil, err
+		return []models.Actor{}, err
 	}
 	defer cursor.Close(ctx)
 
 	if err := cursor.All(ctx, &actors); err != nil {
-		return nil, err
+		return []models.Actor{}, err
 	}
 
 	return actors, nil
@@ -88,13 +88,13 @@ func (dao *MongoActorDAO) ListAll(ctx context.Context) ([]models.Actor, error) {
 	filter := bson.M{}
 	cursor, err := dao.collection.Find(ctx, filter)
 	if err != nil {
-		return nil, err
+		return []models.Actor{}, err
 	}
 
 	defer cursor.Close(ctx)
 
 	if err := cursor.All(ctx, &actors); err != nil {
-		return nil, err
+		return []models.Actor{}, err
 	}
 
 	return actors, nil

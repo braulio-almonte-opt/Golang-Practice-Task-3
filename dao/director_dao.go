@@ -49,12 +49,12 @@ func (dao *MongoDirectorDAO) GetDirectorByID(ctx context.Context, directorID str
 	var director models.Director
 	id, err := primitive.ObjectIDFromHex(directorID)
 	if err != nil {
-		return director, err
+		return models.Director{}, err
 	}
 	filter := bson.M{"_id": id}
 	err = dao.collection.FindOne(ctx, filter).Decode(&director)
 	if err != nil {
-		return director, err
+		return models.Director{}, err
 	}
 	return director, nil
 }
@@ -72,12 +72,12 @@ func (dao *MongoDirectorDAO) FindAllDirectors(ctx context.Context, directorName 
 
 	cursor, err := dao.collection.Find(ctx, filter)
 	if err != nil {
-		return nil, err
+		return []models.Director{}, err
 	}
 	defer cursor.Close(ctx)
 
 	if err := cursor.All(ctx, &directors); err != nil {
-		return nil, err
+		return []models.Director{}, err
 	}
 
 	return directors, nil
@@ -88,13 +88,13 @@ func (dao *MongoDirectorDAO) ListAll(ctx context.Context) ([]models.Director, er
 	filter := bson.M{}
 	cursor, err := dao.collection.Find(ctx, filter)
 	if err != nil {
-		return nil, err
+		return []models.Director{}, err
 	}
 
 	defer cursor.Close(ctx)
 
 	if err := cursor.All(ctx, &directors); err != nil {
-		return nil, err
+		return []models.Director{}, err
 	}
 
 	return directors, nil

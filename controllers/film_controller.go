@@ -20,7 +20,7 @@ type CreateFilmRequest struct {
 }
 
 type FilmResponse struct {
-	ID         primitive.ObjectID   `json:"id"`
+	ID         primitive.ObjectID   `json:"_id"`
 	Title      string               `json:"title"`
 	Year       int                  `json:"year"`
 	DirectorID primitive.ObjectID   `json:"director_id"`
