@@ -2,7 +2,9 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/braulio-almonte-opt/task3-moviesAPI/dao"
 	"github.com/braulio-almonte-opt/task3-moviesAPI/models"
@@ -14,6 +16,11 @@ type FilmService struct {
 	directorDAO dao.DirectorDAO
 	actorDAO    dao.ActorDAO
 }
+
+var (
+	ErrEmptyID      = errors.New("Empty ID field")
+	ErrMissingField = errors.New("There are missing required fields")
+)
 
 func NewFilmService(filmDAO dao.FilmDAO, directorDAO dao.DirectorDAO, actorDAO dao.ActorDAO) *FilmService {
 	return &FilmService{
@@ -59,7 +66,17 @@ func (s *FilmService) CreateFilm(ctx context.Context, title string, year int, di
 }
 
 func (s *FilmService) GetFilmByID(ctx context.Context, filmID string) (models.Film, error) {
-	return s.filmDAO.GetFilmByID(ctx, filmID)
+
+	filmID = strings.TrimSpace(filmID)
+	if filmID == "" {
+		return models.Film{}, ErrEmptyID
+	}
+	film, err := s.filmDAO.GetFilmByID(ctx, filmID)
+	if err != nil {
+		return models.Film{}, fmt.Errorf("Film not found with ID %v", filmID)
+	}
+
+	return film, nil
 }
 
 func (s *FilmService) ListAllFilms(ctx context.Context) ([]models.Film, error) {
@@ -67,18 +84,55 @@ func (s *FilmService) ListAllFilms(ctx context.Context) ([]models.Film, error) {
 }
 
 func (s *FilmService) UpdateFilm(ctx context.Context, filmID string, title string, year int, directorIDStr string, actorIDStrs []string) error {
+	_, err := primitive.ObjectIDFromHex(filmID)
+	if err != nil {
+		return fmt.Errorf("Invalid film ID")
+	}
+
+	stringValidationArray := [2]string{title, directorIDStr}
+
+	for _, s := range stringValidationArray {
+		if trimmedString := strings.TrimSpace(s); trimmedString == "" {
+			return ErrMissingField
+		}
+	}
+
+	for _, v := range actorIDStrs {
+		_, err := primitive.ObjectIDFromHex(v)
+		if err != nil {
+			return fmt.Errorf("Invalid actor ID: %v", v)
+		}
+	}
+
+	_, err = s.filmDAO.GetFilmByID(ctx, filmID)
+	if err != nil {
+		return fmt.Errorf("No film with ID %v", filmID)
+	}
+
 	return s.filmDAO.UpdateFilm(ctx, filmID, title, year, directorIDStr, actorIDStrs)
 }
 
 func (s *FilmService) DeleteFilm(ctx context.Context, filmID string) error {
+	_, err := primitive.ObjectIDFromHex(filmID)
+	if err != nil {
+		return fmt.Errorf("Invalid film ID %v", filmID)
+	}
 	return s.filmDAO.DeleteFilm(ctx, filmID)
 }
 
 func (s *FilmService) GetFilmsByDirector(ctx context.Context, directorIDStr string) ([]models.Film, error) {
+	_, err := primitive.ObjectIDFromHex(directorIDStr)
+	if err != nil {
+		return []models.Film{}, fmt.Errorf("Invalid director ID: %v", directorIDStr)
+	}
 	return s.filmDAO.GetFilmByDirector(ctx, directorIDStr)
 }
 
 func (s *FilmService) GetFilmsByActor(ctx context.Context, actorIDSts string) ([]models.Film, error) {
+	_, err := primitive.ObjectIDFromHex(actorIDSts)
+	if err != nil {
+		return []models.Film{}, fmt.Errorf("Invalid director ID: %v", actorIDSts)
+	}
 	return s.filmDAO.GetFilmByActor(ctx, actorIDSts)
 }
 
@@ -87,9 +141,29 @@ func (s *FilmService) GetAllFilmsPopulated(ctx context.Context) ([]models.FilmPo
 }
 
 func (s *FilmService) GetFilmsByDirectorName(ctx context.Context, directorName string, opts models.SearchOptions) ([]models.FilmPopulated, error) {
+	directorName = strings.TrimSpace(directorName)
+	if directorName == "" {
+		return []models.FilmPopulated{}, fmt.Errorf("Empty director name")
+	}
+
+	_, err := s.directorDAO.GetDirectorByName(ctx, directorName)
+	if err != nil {
+		return []models.FilmPopulated{}, fmt.Errorf("No director found with name: %v", directorName)
+	}
+
 	return s.filmDAO.GetFilmsByDirectorName(ctx, directorName, opts)
 }
 
 func (s *FilmService) GetFilmsByActorName(ctx context.Context, actorName string, opts models.SearchOptions) ([]models.FilmPopulated, error) {
+
+	actorName = strings.TrimSpace(actorName)
+	if actorName == "" {
+		return []models.FilmPopulated{}, fmt.Errorf("Empty actor name")
+	}
+	_, err := s.actorDAO.GetActorByName(ctx, actorName)
+	if err != nil {
+		return []models.FilmPopulated{}, fmt.Errorf("No actor with name: %v", actorName)
+	}
+
 	return s.filmDAO.GetFilmsByActorName(ctx, actorName, opts)
 }

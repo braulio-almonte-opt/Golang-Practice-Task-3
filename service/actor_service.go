@@ -2,9 +2,12 @@ package service
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/braulio-almonte-opt/task3-moviesAPI/dao"
 	"github.com/braulio-almonte-opt/task3-moviesAPI/models"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type ActorService struct {
@@ -18,10 +21,18 @@ func NewActorService(actorDAO dao.ActorDAO) *ActorService {
 }
 
 func (s *ActorService) CreateActor(ctx context.Context, actor models.Actor) error {
+	trimmedNamne := strings.TrimSpace(actor.Name)
+	if trimmedNamne == "" {
+		return fmt.Errorf("Empty actor name")
+	}
 	return s.actorDAO.InsertActor(ctx, actor)
 }
 
 func (s *ActorService) GetActorByID(ctx context.Context, actorID string) (models.Actor, error) {
+	_, err := primitive.ObjectIDFromHex(actorID)
+	if err != nil {
+		return models.Actor{}, fmt.Errorf("Invalid actor ID: %v", actorID)
+	}
 	return s.actorDAO.GetActorByID(ctx, actorID)
 }
 
@@ -30,9 +41,22 @@ func (s *ActorService) ListAllActors(ctx context.Context) ([]models.Actor, error
 }
 
 func (s *ActorService) UpdateActor(ctx context.Context, actorID, actorName string) error {
+	_, err := primitive.ObjectIDFromHex(actorID)
+	if err != nil {
+		return fmt.Errorf("Invalid actor ID: %v", actorID)
+	}
+
+	actorName = strings.TrimSpace(actorName)
+	if actorName == "" {
+		return fmt.Errorf("Empty actor name")
+	}
 	return s.actorDAO.UpdateActor(ctx, actorID, actorName)
 }
 
 func (s *ActorService) DeleteActor(ctx context.Context, actorID string) error {
+	_, err := primitive.ObjectIDFromHex(actorID)
+	if err != nil {
+		return fmt.Errorf("Invalid actor ID")
+	}
 	return s.actorDAO.DeleteActor(ctx, actorID)
 }
