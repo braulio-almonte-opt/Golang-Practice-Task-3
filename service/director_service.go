@@ -56,10 +56,10 @@ func (s *DirectorService) UpdateDirector(ctx context.Context, directorID, direct
 	return s.directorDAO.UpdateDirector(ctx, directorID, directorName)
 }
 
-func (s *DirectorService) DeleteDirector(ctx context.Context, DirectorID string) error {
-	_, err := primitive.ObjectIDFromHex(DirectorID)
+func (s *DirectorService) DeleteDirector(ctx context.Context, directorID string) error {
+	_, err := primitive.ObjectIDFromHex(directorID)
 	if err != nil {
-		return fmt.Errorf("Invalid directo ID: %v", DirectorID)
+		return fmt.Errorf("Invalid directo ID: %v", directorID)
 	}
-	return s.directorDAO.DeleteDirector(ctx, DirectorID)
+	return s.directorDAO.DeleteDirector(ctx, directorID)
 }

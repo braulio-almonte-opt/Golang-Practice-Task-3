@@ -205,20 +205,17 @@ func (ctrl *FilmController) GetFilmsByActorName(c *gin.Context) {
 		return
 	}
 
-	// Parse pagination parameters (supports both 'start' and 'skip')
 	skipStr := c.DefaultQuery("start", c.DefaultQuery("skip", "0"))
 	limitStr := c.DefaultQuery("limit", "0")
 
 	skip, _ := strconv.ParseInt(skipStr, 10, 64)
 	limit, _ := strconv.ParseInt(limitStr, 10, 64)
 
-	// Parse fields projection (e.g., ?fields=title,year)
 	var fields []string
 	if f := c.Query("fields"); f != "" {
 		fields = strings.Split(f, ",")
 	}
 
-	// Parse excluded fields projection (e.g., ?exclude=director)
 	var exclude []string
 	if e := c.Query("exclude"); e != "" {
 		exclude = strings.Split(e, ",")
