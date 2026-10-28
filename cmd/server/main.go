@@ -39,6 +39,9 @@ func run() error {
 		log.Println("No .env file found")
 	}
 	dbName := os.Getenv("DB_NAME")
+	if dbName == "" {
+		dbName = "moviesAPI"
+	}
 	actorDAO := dao.NewActorDAO(client, dbName)
 	actorService := service.NewActorService(actorDAO)
 	actorController := controllers.NewActorController(actorService)
