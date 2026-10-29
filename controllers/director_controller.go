@@ -95,7 +95,7 @@ func (ctrl *DirectorController) DeleteDirector(c *gin.Context) {
 	id := c.Param("id")
 
 	if err := ctrl.service.DeleteDirector(c.Request.Context(), id); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Falied to delete director"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete director"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Director deleted successfully"})

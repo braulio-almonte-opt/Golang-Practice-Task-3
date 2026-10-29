@@ -150,7 +150,7 @@ func (s *FilmService) GetFilmsByDirector(ctx context.Context, directorIDStr stri
 func (s *FilmService) GetFilmsByActor(ctx context.Context, actorIDSts string) ([]models.Film, error) {
 	_, err := primitive.ObjectIDFromHex(actorIDSts)
 	if err != nil {
-		return []models.Film{}, fmt.Errorf("Invalid director ID: %v", actorIDSts)
+		return []models.Film{}, fmt.Errorf("Invalid actor ID: %v", actorIDSts)
 	}
 	return s.filmDAO.GetFilmByActor(ctx, actorIDSts)
 }

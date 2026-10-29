@@ -22,11 +22,11 @@ func NewDirectorService(directorDAO dao.DirectorDAO) *DirectorService {
 }
 
 func (s *DirectorService) CreateDirector(ctx context.Context, director models.Director) (models.Director, error) {
-	trimmedNamne := strings.TrimSpace(director.Name)
-	if trimmedNamne == "" {
+	trimmedName := strings.TrimSpace(director.Name)
+	if trimmedName == "" {
 		return models.Director{}, fmt.Errorf("Empty director name")
 	}
-	director.Name = trimmedNamne
+	director.Name = trimmedName
 
 	return s.directorDAO.InsertDirector(ctx, director)
 }
@@ -60,7 +60,7 @@ func (s *DirectorService) UpdateDirector(ctx context.Context, directorID, direct
 func (s *DirectorService) DeleteDirector(ctx context.Context, directorID string) error {
 	_, err := primitive.ObjectIDFromHex(directorID)
 	if err != nil {
-		return fmt.Errorf("Invalid directo ID: %v", directorID)
+		return fmt.Errorf("Invalid director ID: %v", directorID)
 	}
 	films, err := s.filmDAO.GetFilmByDirector(ctx, directorID)
 	if err != nil {
