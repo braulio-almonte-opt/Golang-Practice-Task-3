@@ -205,7 +205,7 @@ func (dao *MongoFilmDAO) GetFilmsByActorName(ctx context.Context, actorName stri
 
 func (dao *MongoFilmDAO) GetFilmByName(ctx context.Context, filmName string) (models.Film, error) {
 	var films models.Film
-	filter := bson.D{{Key: "name", Value: filmName}}
+	filter := bson.D{{Key: "title", Value: filmName}}
 	err := dao.collection.FindOne(ctx, filter).Decode(&films)
 	return films, err
 }
