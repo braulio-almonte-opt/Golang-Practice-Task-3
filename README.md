@@ -116,7 +116,7 @@ Performs a case-insensitive search across associated actors with support for pag
   - `exclude` (Optional): Fields to exclude (e.g., `director`)
 - **Example (HTTPie):**
   ```bash
-  http GET "localhost:8080/api/v1/films/search/actor?name=Matthew&exclude=actors"
+  http GET "localhost:8080/api/v1/films/search/actor?name=Ryan%20Gosling&exclude=actors"
   ```
 
 ---
