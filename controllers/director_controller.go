@@ -18,6 +18,16 @@ type DirectorController struct {
 	service *service.DirectorService
 }
 
+func (ctrl *DirectorController) RegisterRoutes(router *gin.RouterGroup) {
+	directors := router.Group("/directors")
+	{
+		directors.POST("", ctrl.CreateDirector)
+		directors.GET("", ctrl.GetAllDirectors)
+		directors.GET("/:id", ctrl.GetDirectorByID)
+		directors.PUT("/:id", ctrl.UpdateDirector)
+		directors.DELETE("/:id", ctrl.DeleteDirector)
+	}
+}
 func NewDirectorController(service *service.DirectorService) *DirectorController {
 	return &DirectorController{
 		service: service,

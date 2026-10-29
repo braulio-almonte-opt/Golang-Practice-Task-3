@@ -31,6 +31,24 @@ type FilmController struct {
 	service *service.FilmService
 }
 
+func (ctrl *FilmController) RegisterRoutes(router *gin.RouterGroup) {
+	films := router.Group("/films")
+	{
+		films.POST("", ctrl.CreateFilm)
+		films.GET("", ctrl.GetAllFilms)
+		films.GET("/populated", ctrl.GetAllFilmsPopulated)
+		films.GET("/:id", ctrl.GetFilmByID)
+		films.PUT("/:id", ctrl.UpdateFilm)
+		films.DELETE("/:id", ctrl.DeleteFilm)
+
+		films.GET("/director/:directorId", ctrl.GetFilmsByDirector)
+		films.GET("/actor/:actorId", ctrl.GetFilmsByActor)
+
+		films.GET("/search/director", ctrl.GetFilmsByDirectorName)
+		films.GET("/search/actor", ctrl.GetFilmsByActorName)
+	}
+}
+
 func NewFilmController(service *service.FilmService) *FilmController {
 	return &FilmController{
 		service: service,

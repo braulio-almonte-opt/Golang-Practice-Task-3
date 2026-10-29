@@ -14,41 +14,9 @@ func SetupRouter(
 
 	api := r.Group("/api/v1")
 	{
-		actors := api.Group("/actors")
-		{
-			actors.POST("", actorController.CreateActor)
-			actors.GET("", actorController.GetAllActors)
-			actors.GET("/:id", actorController.GetActorByID)
-			actors.PUT("/:id", actorController.UpdateActor)
-			actors.DELETE("/:id", actorController.DeleteActor)
-		}
-
-		directors := api.Group("/directors")
-		{
-			directors.POST("", directorController.CreateDirector)
-			directors.GET("", directorController.GetAllDirectors)
-			directors.GET("/:id", directorController.GetDirectorByID)
-			directors.PUT("/:id", directorController.UpdateDirector)
-			directors.DELETE("/:id", directorController.DeleteDirector)
-
-		}
-
-		films := api.Group("/films")
-		{
-			films.POST("", filmController.CreateFilm)
-			films.GET("", filmController.GetAllFilms)
-			films.GET("/populated", filmController.GetAllFilmsPopulated)
-			films.GET("/:id", filmController.GetFilmByID)
-			films.PUT("/:id", filmController.UpdateFilm)
-			films.DELETE("/:id", filmController.DeleteFilm)
-
-			films.GET("/director/:directorId", filmController.GetFilmsByDirector)
-			films.GET("/actor/:actorId", filmController.GetFilmsByActor)
-
-			films.GET("/search/director", filmController.GetFilmsByDirectorName)
-			films.GET("/search/actor", filmController.GetFilmsByActorName)
-		}
-
+		actorController.RegisterRoutes(api)
+		directorController.RegisterRoutes(api)
+		filmController.RegisterRoutes(api)
 	}
 
 	return r, nil

@@ -19,6 +19,17 @@ type ActorController struct {
 	service *service.ActorService
 }
 
+func (ctrl *ActorController) RegisterRoutes(router *gin.RouterGroup) {
+	actors := router.Group("/actors")
+	{
+		actors.POST("", ctrl.CreateActor)
+		actors.GET("", ctrl.GetAllActors)
+		actors.GET("/:id", ctrl.GetActorByID)
+		actors.PUT("/:id", ctrl.UpdateActor)
+		actors.DELETE("/:id", ctrl.DeleteActor)
+	}
+}
+
 func NewActorController(service *service.ActorService) *ActorController {
 	return &ActorController{
 		service: service,
