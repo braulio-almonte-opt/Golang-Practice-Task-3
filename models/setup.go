@@ -10,8 +10,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-const test = "mongodb://localhost:27017/goAPITest"
-
 func ConnectDatabase(connectionString string) (*mongo.Client, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
