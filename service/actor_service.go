@@ -15,9 +15,10 @@ type ActorService struct {
 	filmDAO  dao.FilmDAO
 }
 
-func NewActorService(actorDAO dao.ActorDAO) *ActorService {
+func NewActorService(actorDAO dao.ActorDAO, filmDAO dao.FilmDAO) *ActorService {
 	return &ActorService{
 		actorDAO: actorDAO,
+		filmDAO:  filmDAO,
 	}
 }
 
@@ -62,7 +63,7 @@ func (s *ActorService) DeleteActor(ctx context.Context, actorID string) error {
 		return fmt.Errorf("Invalid actor ID")
 	}
 
-	films, err := s.filmDAO.GetFilmByDirector(ctx, actorID)
+	films, err := s.filmDAO.GetFilmByActor(ctx, actorID)
 	if err != nil {
 		return err
 	}

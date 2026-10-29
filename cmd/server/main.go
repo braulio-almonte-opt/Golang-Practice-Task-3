@@ -45,16 +45,16 @@ func run() error {
 			log.Printf("disconnect MongoDB: %v", err)
 		}
 	}()
+	filmDAO := dao.NewFilmDAO(client, dbName)
 
 	actorDAO := dao.NewActorDAO(client, dbName)
-	actorService := service.NewActorService(actorDAO)
+	actorService := service.NewActorService(actorDAO, filmDAO)
 	actorController := controllers.NewActorController(actorService)
 
 	directorDAO := dao.NewDirectorDAO(client, dbName)
-	directorService := service.NewDirectorService(directorDAO)
+	directorService := service.NewDirectorService(directorDAO, filmDAO)
 	directorController := controllers.NewDirectorController(directorService)
 
-	filmDAO := dao.NewFilmDAO(client, dbName)
 	filmService := service.NewFilmService(filmDAO, directorDAO, actorDAO)
 	filmController := controllers.NewFilmController(filmService)
 

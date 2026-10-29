@@ -15,9 +15,10 @@ type DirectorService struct {
 	filmDAO     dao.FilmDAO
 }
 
-func NewDirectorService(directorDAO dao.DirectorDAO) *DirectorService {
+func NewDirectorService(directorDAO dao.DirectorDAO, filmDAO dao.FilmDAO) *DirectorService {
 	return &DirectorService{
 		directorDAO: directorDAO,
+		filmDAO:     filmDAO,
 	}
 }
 
