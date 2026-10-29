@@ -66,7 +66,7 @@ A high-performance RESTful microservice built with **Go**, **Gin**, and **MongoD
 
 4. **Run the Application:**
    ```bash
-   go run cmd/server/main.go
+   go run ./cmd/server
    ```
    The server will start on port `8080` (or your configured `PORT`).
 
