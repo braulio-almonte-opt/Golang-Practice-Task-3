@@ -114,7 +114,7 @@ func (s *FilmService) UpdateFilm(ctx context.Context, filmID string, title strin
 
 	_, err = s.directorDAO.GetDirectorByID(ctx, directorIDStr)
 	if err != nil {
-		return fmt.Errorf("No actor under ID: %v", actorIDStrs)
+		return fmt.Errorf("No director under ID: %v", directorIDStr)
 	}
 
 	for _, v := range actorIDStrs {
