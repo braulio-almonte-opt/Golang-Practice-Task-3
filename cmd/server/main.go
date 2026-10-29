@@ -23,7 +23,18 @@ func main() {
 }
 
 func run() error {
-	client, err := models.ConnectDatabase()
+	if err := godotenv.Load(".env.production"); err != nil {
+		log.Println("No .env file found")
+	}
+	dbName := os.Getenv("DB_NAME")
+	if dbName == "" {
+		dbName = "moviesAPI"
+	}
+	connectionString := os.Getenv("CONNECTION_STRING")
+	if connectionString == "" {
+		connectionString = "mongodb://localhost:27017/goAPITest"
+	}
+	client, err := models.ConnectDatabase(connectionString)
 	if err != nil {
 		return err
 	}
@@ -35,13 +46,6 @@ func run() error {
 		}
 	}()
 
-	if err := godotenv.Load(".env.production"); err != nil {
-		log.Println("No .env file found")
-	}
-	dbName := os.Getenv("DB_NAME")
-	if dbName == "" {
-		dbName = "moviesAPI"
-	}
 	actorDAO := dao.NewActorDAO(client, dbName)
 	actorService := service.NewActorService(actorDAO)
 	actorController := controllers.NewActorController(actorService)
