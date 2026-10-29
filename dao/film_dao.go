@@ -114,7 +114,12 @@ func (dao *MongoFilmDAO) GetFilmsByDirectorName(ctx context.Context, directorNam
 	}
 
 	if len(opts.Fields) > 0 {
-		proj := bson.D{primitive.E{Key: "_id", Value: 1}}
+		proj := bson.D{primitive.E{Key: "_id", Value: 1},
+			primitive.E{Key: "director_id", Value: 1},
+			primitive.E{Key: "actor_ids", Value: 1},
+			primitive.E{Key: "director", Value: 1},
+			primitive.E{Key: "actors", Value: 1}}
+
 		for _, field := range opts.Fields {
 			proj = append(proj, primitive.E{Key: field, Value: 1})
 		}
@@ -177,7 +182,11 @@ func (dao *MongoFilmDAO) GetFilmsByActorName(ctx context.Context, actorName stri
 	}
 
 	if len(opts.Fields) > 0 {
-		proj := bson.D{primitive.E{Key: "_id", Value: 1}}
+		proj := bson.D{primitive.E{Key: "_id", Value: 1},
+			primitive.E{Key: "director_id", Value: 1},
+			primitive.E{Key: "actor_ids", Value: 1},
+			primitive.E{Key: "director", Value: 1},
+			primitive.E{Key: "actors", Value: 1}}
 		for _, field := range opts.Fields {
 			proj = append(proj, primitive.E{Key: field, Value: 1})
 		}
