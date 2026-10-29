@@ -12,6 +12,7 @@ import (
 
 type DirectorService struct {
 	directorDAO dao.DirectorDAO
+	filmDAO     dao.FilmDAO
 }
 
 func NewDirectorService(directorDAO dao.DirectorDAO) *DirectorService {
@@ -60,6 +61,13 @@ func (s *DirectorService) DeleteDirector(ctx context.Context, directorID string)
 	_, err := primitive.ObjectIDFromHex(directorID)
 	if err != nil {
 		return fmt.Errorf("Invalid directo ID: %v", directorID)
+	}
+	films, err := s.filmDAO.GetFilmByDirector(ctx, directorID)
+	if err != nil {
+		return err
+	}
+	if len(films) > 0 {
+		return fmt.Errorf("Cannot delete director linked to films: %v", films)
 	}
 	return s.directorDAO.DeleteDirector(ctx, directorID)
 }

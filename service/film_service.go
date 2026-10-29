@@ -48,6 +48,10 @@ func (s *FilmService) CreateFilm(ctx context.Context, title string, year int, di
 		if err != nil {
 			return models.Film{}, fmt.Errorf("invalid actor ID at index %d: %w", i, err)
 		}
+		_, err = s.actorDAO.GetActorByID(ctx, aIDStr)
+		if err != nil {
+			return models.Film{}, fmt.Errorf("No actor under ID: %v", aIDStr)
+		}
 		actorIDs[i] = aID
 	}
 
@@ -90,6 +94,11 @@ func (s *FilmService) UpdateFilm(ctx context.Context, filmID string, title strin
 		return fmt.Errorf("Invalid film ID")
 	}
 
+	_, err = primitive.ObjectIDFromHex(directorIDStr)
+	if err != nil {
+		return fmt.Errorf("No director with ID: %v", directorIDStr)
+	}
+
 	stringValidationArray := [2]string{title, directorIDStr}
 
 	for _, s := range stringValidationArray {
@@ -102,6 +111,10 @@ func (s *FilmService) UpdateFilm(ctx context.Context, filmID string, title strin
 		_, err := primitive.ObjectIDFromHex(v)
 		if err != nil {
 			return fmt.Errorf("Invalid actor ID: %v", v)
+		}
+		_, err = s.actorDAO.GetActorByID(ctx, v)
+		if err != nil {
+			return fmt.Errorf("No actor under ID: %v", v)
 		}
 	}
 

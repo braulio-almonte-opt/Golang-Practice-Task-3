@@ -12,6 +12,7 @@ import (
 
 type ActorService struct {
 	actorDAO dao.ActorDAO
+	filmDAO  dao.FilmDAO
 }
 
 func NewActorService(actorDAO dao.ActorDAO) *ActorService {
@@ -60,5 +61,15 @@ func (s *ActorService) DeleteActor(ctx context.Context, actorID string) error {
 	if err != nil {
 		return fmt.Errorf("Invalid actor ID")
 	}
+
+	films, err := s.filmDAO.GetFilmByDirector(ctx, actorID)
+	if err != nil {
+		return err
+	}
+
+	if len(films) > 0 {
+		return fmt.Errorf("Cannot delete actor linked to films: %v", films)
+	}
+
 	return s.actorDAO.DeleteActor(ctx, actorID)
 }
